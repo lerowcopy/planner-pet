@@ -1,6 +1,7 @@
 package com.example.pet.presentation.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,6 +30,7 @@ import com.example.pet.ui.theme.PetTheme
  * @param day День выполнения задачи
  * @param isCompleted Статус выполнения задачи
  * @param onCheckedChange Callback при изменении статуса выполнения
+ * @param onClick Callback при нажатии на задачу
  * @param modifier Modifier для настройки внешнего вида
  */
 @Composable
@@ -38,6 +40,7 @@ fun TaskItem(
     day: String,
     isCompleted: Boolean = false,
     onCheckedChange: (Boolean) -> Unit = {},
+    onClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -45,13 +48,17 @@ fun TaskItem(
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant)
+            .clickable(onClick = onClick)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Checkbox(
             checked = isCompleted,
-            onCheckedChange = onCheckedChange
+            onCheckedChange = { newValue ->
+                // Останавливаем распространение события клика при нажатии на чекбокс
+                onCheckedChange(newValue)
+            }
         )
         
         Column(

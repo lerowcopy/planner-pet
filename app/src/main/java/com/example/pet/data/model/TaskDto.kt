@@ -1,5 +1,6 @@
 package com.example.pet.data.model
 
+import com.example.pet.data.local.entity.TaskEntity
 import com.example.pet.domain.model.Task
 
 /**
@@ -25,6 +26,16 @@ data class TaskDto(
             isCompleted = isCompleted
         )
     }
+
+    fun toEntity(): TaskEntity{
+        return TaskEntity(
+            id = id.toLong(),
+            title = title,
+            description = description ?: "",
+            day = day,
+            isCompleted = isCompleted
+        )
+    }
 }
 
 /**
@@ -34,3 +45,19 @@ fun List<TaskDto>.toDomain(): List<Task> {
     return map { it.toDomain() }
 }
 
+fun List<TaskDto>.toEntity(): List<TaskEntity> {
+    return map { it.toEntity() }
+}
+
+/**
+ * Преобразовать Domain модель в DTO.
+ */
+fun Task.toDto(): TaskDto {
+    return TaskDto(
+        id = id,
+        title = title,
+        description = description,
+        day = day,
+        isCompleted = isCompleted
+    )
+}

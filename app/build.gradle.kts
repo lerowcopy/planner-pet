@@ -4,13 +4,12 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
     id("org.jetbrains.kotlin.kapt")
+    id("com.google.devtools.ksp")
 }
 
 android {
     namespace = "com.example.pet"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.pet"
@@ -23,8 +22,14 @@ android {
     }
 
     buildTypes {
-        release {
+        debug {
+            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080/api/\"")
             isMinifyEnabled = false
+        }
+        release {
+            buildConfigField("String", "BASE_URL", "\"https://api.yourapp.com/\"")
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -40,6 +45,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -74,11 +80,17 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
     implementation(libs.gson)
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
     
     // Dependency Injection
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
     kapt(libs.hilt.compiler)
+    
+    // Navigation
+    implementation(libs.androidx.navigation.compose)
     
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

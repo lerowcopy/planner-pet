@@ -1,7 +1,9 @@
 package com.example.pet.domain.repository
 
 import com.example.pet.domain.model.Task
+import com.example.pet.domain.model.TaskEvent
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
 
 /**
  * Интерфейс репозитория для работы с задачами.
@@ -9,10 +11,15 @@ import kotlinx.coroutines.flow.Flow
  */
 interface TaskRepository {
     /**
+     * Поток событий об изменениях задач.
+     * Подписываясь на этот поток, можно получать уведомления о создании, обновлении или удалении задач.
+     */
+    val taskEvents: SharedFlow<TaskEvent>
+    /**
      * Получить список всех задач.
      * @return Flow со списком задач
      */
-    suspend fun getTasks(): Flow<Result<List<Task>>>
+    fun getTasks(): Flow<Result<List<Task>>>
     
     /**
      * Получить задачу по ID.
@@ -33,5 +40,24 @@ interface TaskRepository {
         description: String? = null,
         day: String
     ): Flow<Result<Task>>
+    
+    /**
+     * Обновить задачу.
+     * @param task Обновленная задача
+     * @return Flow с результатом обновленной задачи
+     */
+    suspend fun updateTask(task: Task): Flow<Result<Task>>
+
+    /**
+     * Загрузить задачи.
+     */
+    suspend fun refreshTasks(): Result<Unit>
+    
+    /**
+     * Удалить задачу по ID.
+     * @param taskId ID задачи
+     * @return Flow с результатом операции (Unit при успехе)
+     */
+    suspend fun deleteTask(taskId: String): Flow<Result<Unit>>
 }
 

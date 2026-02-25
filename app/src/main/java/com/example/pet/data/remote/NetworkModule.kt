@@ -1,5 +1,6 @@
 package com.example.pet.data.remote
 
+import com.example.pet.BuildConfig
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dagger.Module
@@ -19,8 +20,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-
-    private const val BASE_URL = "http://10.0.2.2:8080/api/"
     
     @Provides
     @Singleton
@@ -34,16 +33,22 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient {
-        val loggingInterceptor = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
-        }
-        
-        return OkHttpClient.Builder()
-            .addInterceptor(loggingInterceptor)
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
-            .build()
+        return OkHttpClient.Builder().apply {
+            // Добавляем logging interceptor только в debug режиме
+            if (BuildConfig.DEBUG) {
+                addInterceptor(HttpLoggingInterceptor().apply {
+                    level = HttpLoggingInterceptor.Level.BODY
+                })
+            }
+            
+            // Оптимизированные таймауты для мобильного приложения
+            connectTimeout(10, TimeUnit.SECONDS)
+            readTimeout(15, TimeUnit.SECONDS)
+            writeTimeout(15, TimeUnit.SECONDS)
+            
+            // Retry on connection failure
+            retryOnConnectionFailure(true)
+        }.build()
     }
     
     @Provides
@@ -53,7 +58,7 @@ object NetworkModule {
         gson: Gson
     ): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(BuildConfig.BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
@@ -65,4 +70,5 @@ object NetworkModule {
         return retrofit.create(TaskApiService::class.java)
     }
 }
+
 

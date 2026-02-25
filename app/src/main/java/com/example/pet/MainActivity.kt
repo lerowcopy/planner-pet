@@ -6,7 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.pet.presentation.home.HomeScreen
+import androidx.navigation.compose.rememberNavController
+import com.example.pet.presentation.navigation.NavGraph
 import com.example.pet.ui.theme.PetTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -25,7 +26,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppRoot() {
-    HomeScreen()
+    val navController = rememberNavController()
+    NavGraph(navController = navController)
 }
 
 @Preview(showBackground = true)
