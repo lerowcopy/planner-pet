@@ -1,6 +1,8 @@
 package com.example.pet.data.model
 
+import com.example.pet.data.local.entity.TaskEntity
 import com.google.gson.annotations.SerializedName
+import java.util.UUID
 
 /**
  * DTO для создания новой задачи.
@@ -16,3 +18,9 @@ data class CreateTaskDto(
     val isCompleted: Boolean = false
 )
 
+fun CreateTaskDto.toEntity(): TaskEntity = TaskEntity(
+    title = title,
+    description = description ?: "",
+    day = day,
+    isCompleted = isCompleted
+)

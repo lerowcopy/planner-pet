@@ -178,7 +178,7 @@ class HomeViewModel @Inject constructor(
             )
                 .catch { exception ->
                     _uiEvents.send(UiEvent.ShowError(
-                        exception.message ?: "Ошибка при создании задачи"
+                        ("[Error]HomeViewModel - line181: " + exception.message)
                     ))
                 }
                 .collect { result ->
@@ -186,7 +186,7 @@ class HomeViewModel @Inject constructor(
                         _uiEvents.send(UiEvent.ShowMessage("Задача создана"))
                     }.onFailure { exception ->
                         _uiEvents.send(UiEvent.ShowError(
-                            exception.message ?: "Ошибка при создании задачи"
+                            ("line189: " + exception.message)
                         ))
                     }
                 }
