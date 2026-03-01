@@ -15,12 +15,15 @@ data class CreateTaskDto(
     @SerializedName("day")
     val day: String,
     @SerializedName("isCompleted")
-    val isCompleted: Boolean = false
+    val isCompleted: Boolean = false,
+    @SerializedName("isSynced")
+    val isSynced: Boolean = false
 )
 
 fun CreateTaskDto.toEntity(): TaskEntity = TaskEntity(
-    title = title,
-    description = description ?: "",
-    day = day,
-    isCompleted = isCompleted
+    title = this.title,
+    description = this.description ?: "",
+    day = this.day,
+    isCompleted = this.isCompleted,
+    isSynced = this.isSynced
 )

@@ -1,10 +1,16 @@
 package com.example.pet.presentation.home
 
+import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.pet.data.audio.SpeechToTextService
 import com.example.pet.domain.model.Task
 import com.example.pet.domain.model.TaskEvent
 import com.example.pet.domain.repository.TaskRepository
+import com.example.pet.domain.usecase.CreateTaskFromTextUseCase
 import com.example.pet.domain.usecase.CreateTaskUseCase
 import com.example.pet.domain.usecase.GetTasksUseCase
 import com.example.pet.domain.usecase.RefreshTasksUseCase
@@ -36,7 +42,11 @@ class HomeViewModel @Inject constructor(
     private val createTaskUseCase: CreateTaskUseCase,
     private val updateTaskUseCase: UpdateTaskUseCase,
     private val refreshTasksUseCase: RefreshTasksUseCase,
-    private val taskRepository: TaskRepository
+    private val createTaskFromTextUseCase: CreateTaskFromTextUseCase,
+
+    private val taskRepository: TaskRepository,
+
+    private val speechToTextService: SpeechToTextService
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
@@ -44,42 +54,59 @@ class HomeViewModel @Inject constructor(
     
     private val _uiEvents = Channel<UiEvent>()
     val uiEvents = _uiEvents.receiveAsFlow()
+
+    var isRecording by mutableStateOf(false)
+        private set
+
+    var isModelLoading by mutableStateOf(false)
+        private set
     
     init {
-        /*loadTasks()
-        refreshTask(showLoading = false)*/
         observeTasks()
         refreshFromNetwork()
-        
-        // Подписываемся на события изменений задач для автоматического обновления списка
-        /*taskRepository.taskEvents
-            .onEach { event ->
-                when (event) {
-                    is TaskEvent.TaskCreated -> {
-                        // Задача создана - обновляем список
-                        refreshTasks()
-                    }
-                    is TaskEvent.TaskDeleted -> {
-                        // Задача удалена - обновляем список
-                        refreshTasks()
-                    }
-                    is TaskEvent.TaskUpdated -> {
-                        // Задача обновлена - обновляем список
-                        refreshTasks()
-                    }
-                }
-            }
-            .launchIn(viewModelScope)*/
+        loadVoiceModel()
+
     }
-    
-    /**
-     * Обновить список задач без показа состояния загрузки.
-     * Используется для автоматического обновления при изменениях.
-     */
-    /*fun refreshTasks() {
-        refreshTask(showLoading = false)
-        loadTasks(showLoading = false)
-    }*/
+
+    private fun loadVoiceModel() {
+        viewModelScope.launch {
+            isModelLoading = true
+            speechToTextService.loadModel()
+            isModelLoading = false
+        }
+    }
+
+    fun startVoiceInput() {
+        isRecording = true
+        Log.i("ai", isRecording.toString())
+        speechToTextService.startListening(
+            onResult = { text ->
+                isRecording = false
+                viewModelScope.launch {
+                    Log.i("ai", text)
+                    createTaskFromTextUseCase(
+                        text
+                    )
+                }
+            },
+            onError = {error ->
+                isRecording = false
+                speechToTextService.stopListening()
+                Log.i("ai", error)
+
+            }
+        )
+    }
+
+    fun stopVoiceInput() {
+        speechToTextService.stopListening()
+        isRecording = false
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        speechToTextService.release()
+    }
 
     private fun observeTasks() {
         viewModelScope.launch {
@@ -155,6 +182,7 @@ class HomeViewModel @Inject constructor(
     fun createQuickTask(title: String) {
         val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
         createTask(title = title, description = null, day = today)
+
     }
     
     /**

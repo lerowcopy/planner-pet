@@ -12,30 +12,30 @@ data class TaskDto(
     val title: String,
     val description: String? = null,
     val day: String,
-    val isCompleted: Boolean = false
-) {
-    /**
-     * Преобразовать DTO в Domain модель.
-     */
-    fun toDomain(): Task {
-        return Task(
-            id = id,
-            title = title,
-            description = description,
-            day = day,
-            isCompleted = isCompleted
-        )
-    }
+    val isCompleted: Boolean = false,
+    val isSynced: Boolean = false
+)
 
-    fun toEntity(): TaskEntity{
-        return TaskEntity(
-            id = id.toLong(),
-            title = title,
-            description = description ?: "",
-            day = day,
-            isCompleted = isCompleted
-        )
-    }
+fun TaskDto.toEntity(): TaskEntity{
+    return TaskEntity(
+        id = this.id.toLong(),
+        title = this.title,
+        description = this.description ?: "",
+        day = this.day,
+        isCompleted = this.isCompleted,
+        isSynced = this.isSynced
+    )
+}
+
+fun TaskDto.toDomain(): Task {
+    return Task(
+        id = this.id,
+        title = this.title,
+        description = this.description,
+        day = this.day,
+        isCompleted = this.isCompleted,
+        isSynced = this.isSynced
+    )
 }
 
 /**
@@ -47,17 +47,4 @@ fun List<TaskDto>.toDomain(): List<Task> {
 
 fun List<TaskDto>.toEntity(): List<TaskEntity> {
     return map { it.toEntity() }
-}
-
-/**
- * Преобразовать Domain модель в DTO.
- */
-fun Task.toDto(): TaskDto {
-    return TaskDto(
-        id = id,
-        title = title,
-        description = description,
-        day = day,
-        isCompleted = isCompleted
-    )
 }

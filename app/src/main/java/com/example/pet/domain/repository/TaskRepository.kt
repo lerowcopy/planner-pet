@@ -1,5 +1,6 @@
 package com.example.pet.domain.repository
 
+import com.example.pet.data.local.entity.TaskEntity
 import com.example.pet.domain.model.Task
 import com.example.pet.domain.model.TaskEvent
 import kotlinx.coroutines.flow.Flow
@@ -59,5 +60,12 @@ interface TaskRepository {
      * @return Flow с результатом операции (Unit при успехе)
      */
     suspend fun deleteTask(taskId: String): Flow<Result<Unit>>
+
+    /**
+     * Создать задачу через AI
+     * @param input Текст для париснга через AI
+     * @return Задча для создания и добавления в базу данных
+     */
+    suspend fun createTaskFromText(input: String): TaskEntity
 }
 

@@ -1,3 +1,10 @@
+import java.util.Properties
+
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) load(file.inputStream())
+}
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -12,6 +19,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
+
         applicationId = "com.example.pet"
         minSdk = 24
         targetSdk = 36
@@ -23,6 +31,11 @@ android {
 
     buildTypes {
         debug {
+            buildConfigField(
+                "String",
+                "GEMINI_API_KEY",
+                "\"${localProperties["GEMINI_API_KEY"]}\""
+            )
             buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080/api/\"")
             isMinifyEnabled = false
         }
@@ -66,14 +79,22 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    
+    implementation(libs.androidx.compose.material.icons.core)
+    implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.accompanist.permissions)
+    // Voice Recognizer
+    implementation(libs.vosk.android)
+
     // ViewModel & Lifecycle
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
-    
+
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
-    
+
+    // Gemini
+    implementation(libs.generativeai)
+
     // Network
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
@@ -81,17 +102,18 @@ dependencies {
     implementation(libs.okhttp.logging)
     implementation(libs.gson)
     implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.work.runtime.ktx)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
-    
+
     // Dependency Injection
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
     kapt(libs.hilt.compiler)
-    
+
     // Navigation
     implementation(libs.androidx.navigation.compose)
-    
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

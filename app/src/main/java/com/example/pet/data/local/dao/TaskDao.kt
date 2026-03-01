@@ -18,8 +18,11 @@ interface TaskDao {
     @Query("SELECT * FROM tasks WHERE id = :taskId")
     fun getTaskById(taskId: String): TaskEntity
 
+    @Query("SELECT * FROM tasks WHERE isSynced = 0")
+    fun getUnsyncedTasks(): List<TaskEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertTask(task: TaskEntity)
+    fun insertTask(task: TaskEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(tasks: List<TaskEntity>)
@@ -29,5 +32,8 @@ interface TaskDao {
 
     @Update
     fun updateTask(task: TaskEntity)
+
+    @Query("UPDATE tasks SET isSynced = 1 WHERE id = :taskId")
+    fun markAsSynced(taskId: Long)
 
 }

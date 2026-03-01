@@ -1,5 +1,6 @@
 package com.example.pet.presentation.home
 
+import android.media.MediaRecorder
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,8 +21,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.rounded.KeyboardVoice
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -47,20 +50,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.pet.presentation.ui.VoiceMicButton
 import com.example.pet.ui.theme.PetTheme
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import java.util.jar.Manifest
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
+    ExperimentalPermissionsApi::class
+)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     onTaskClick: (com.example.pet.domain.model.Task) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    // Состояния
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
     var showCreateBottomSheet by remember { mutableStateOf(false) }
@@ -70,10 +82,16 @@ fun HomeScreen(
     // Состояние для быстрого ввода задачи
     var quickTaskTitle by remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
-    
+
     // Автоматически убираем фокус, когда клавиатура скрывается
     // (например, при нажатии "Назад" или кнопки скрытия на самой клавиатуре)
     val isImeVisible = WindowInsets.isImeVisible
+
+    // Запрос разрешения
+    val permissionState = rememberPermissionState(android.Manifest.permission.RECORD_AUDIO)
+
+
+
     LaunchedEffect(isImeVisible) {
         if (!isImeVisible) {
             focusManager.clearFocus()
@@ -132,24 +150,22 @@ fun HomeScreen(
 
                     Spacer(modifier = Modifier.padding(4.dp))
 
-                    IconButton(
-                        onClick = {
-                            if (quickTaskTitle.isNotBlank()) {
-                                viewModel.createQuickTask(quickTaskTitle)
-                                quickTaskTitle = ""
-                            }
+                    VoiceMicButton(
+                        quickTaskTitle = quickTaskTitle,
+                        isRecording = viewModel.isRecording,
+                        isModelLoading = viewModel.isModelLoading,
+                        onSendText = {
+                            viewModel.createQuickTask(quickTaskTitle)
+                            quickTaskTitle = ""
                         },
-                        enabled = quickTaskTitle.isNotBlank()
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Send,
-                            contentDescription = "Отправить",
-                            tint = if (quickTaskTitle.isNotBlank())
-                                MaterialTheme.colorScheme.primary
-                            else
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                        )
-                    }
+                        onStartVoice = {
+                            if (permissionState.status.isGranted) viewModel.startVoiceInput()
+                            else permissionState.launchPermissionRequest()
+                        },
+                        onStopVoice = {
+                            viewModel.stopVoiceInput()
+                        }
+                    )
                 }
             }
         }

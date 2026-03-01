@@ -14,5 +14,8 @@ data class TaskEntity (
     val day: String,
 
     @ColumnInfo(defaultValue = "false")
-    val isCompleted: Boolean = false
+    val isCompleted: Boolean = false,
+
+    @ColumnInfo(defaultValue = "false")
+    val isSynced: Boolean = false
 )

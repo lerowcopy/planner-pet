@@ -1,6 +1,7 @@
 package com.example.pet.domain.model
 
 import com.example.pet.data.local.entity.TaskEntity
+import com.example.pet.data.model.TaskDto
 
 /**
  * Domain модель задачи.
@@ -11,8 +12,10 @@ data class Task(
     val title: String,
     val description: String? = null,
     val day: String,
-    val isCompleted: Boolean = false
+    val isCompleted: Boolean = false,
+    val isSynced: Boolean = false
 )
+
 
 fun Task.toEntity(): TaskEntity {
     return TaskEntity(
@@ -21,6 +24,16 @@ fun Task.toEntity(): TaskEntity {
         description = this.description ?: "",
         day = this.day,
         isCompleted = this.isCompleted
+    )
+}
+
+fun Task.toDto(): TaskDto {
+    return TaskDto(
+        id = id,
+        title = title,
+        description = description,
+        day = day,
+        isCompleted = isCompleted
     )
 }
 
