@@ -160,12 +160,17 @@ class TaskRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteTask(taskId: String): Flow<Result<Unit>> = flow {
+        withContext(Dispatchers.IO){
+            Log.i("exception", taskId)
+            taskDao.deleteById(taskId)
+        }
+
         val result = remoteDataSource.deleteTask(taskId)
         result.onSuccess {
             // Используем tryEmit, чтобы не блокировать выполнение
             _taskEvents.tryEmit(TaskEvent.TaskDeleted(taskId))
         }
-        emit(result)
+        //emit(result)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

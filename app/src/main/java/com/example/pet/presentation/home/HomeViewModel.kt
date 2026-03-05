@@ -12,6 +12,7 @@ import com.example.pet.domain.model.TaskEvent
 import com.example.pet.domain.repository.TaskRepository
 import com.example.pet.domain.usecase.CreateTaskFromTextUseCase
 import com.example.pet.domain.usecase.CreateTaskUseCase
+import com.example.pet.domain.usecase.DeleteTaskUseCase
 import com.example.pet.domain.usecase.GetTasksUseCase
 import com.example.pet.domain.usecase.RefreshTasksUseCase
 import com.example.pet.domain.usecase.UpdateTaskUseCase
@@ -43,15 +44,16 @@ class HomeViewModel @Inject constructor(
     private val updateTaskUseCase: UpdateTaskUseCase,
     private val refreshTasksUseCase: RefreshTasksUseCase,
     private val createTaskFromTextUseCase: CreateTaskFromTextUseCase,
+    private val deleteTaskUseCase: DeleteTaskUseCase,
 
     private val taskRepository: TaskRepository,
 
     private val speechToTextService: SpeechToTextService
 ) : ViewModel() {
-    
+
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
-    
+
     private val _uiEvents = Channel<UiEvent>()
     val uiEvents = _uiEvents.receiveAsFlow()
 
@@ -60,7 +62,7 @@ class HomeViewModel @Inject constructor(
 
     var isModelLoading by mutableStateOf(false)
         private set
-    
+
     init {
         observeTasks()
         refreshFromNetwork()
@@ -89,7 +91,7 @@ class HomeViewModel @Inject constructor(
                     )
                 }
             },
-            onError = {error ->
+            onError = { error ->
                 isRecording = false
                 speechToTextService.stopListening()
                 Log.i("ai", error)
@@ -117,7 +119,9 @@ class HomeViewModel @Inject constructor(
                 .collect { result ->
                     result
                         .onSuccess { tasks -> _uiState.value = HomeUiState.Success(tasks) }
-                        .onFailure { exception -> _uiState.value = HomeUiState.Error(exception.message ?: "Ошибка") }
+                        .onFailure { exception ->
+                            _uiState.value = HomeUiState.Error(exception.message ?: "Ошибка")
+                        }
                 }
         }
     }
@@ -128,7 +132,7 @@ class HomeViewModel @Inject constructor(
             refreshTasksUseCase() // просто пишет в БД, Flow сам обновит UI
         }
     }
-    
+
     /**
      * Загрузить список задач.
      * @param showLoading Показывать ли состояние загрузки (по умолчанию true)
@@ -138,7 +142,7 @@ class HomeViewModel @Inject constructor(
             if (showLoading) {
                 _uiState.value = HomeUiState.Loading
             }
-            
+
             getTasksUseCase()
                 .catch { exception ->
                     _uiState.value = HomeUiState.Error(
@@ -157,7 +161,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun refreshTask(showLoading: Boolean = true){
+    private fun refreshTask(showLoading: Boolean = true) {
         viewModelScope.launch {
             if (showLoading) {
                 _uiState.value = HomeUiState.Loading
@@ -165,16 +169,15 @@ class HomeViewModel @Inject constructor(
 
             refreshTasksUseCase()
                 .onFailure { exception ->
-                _uiState.value = HomeUiState.Error(
-                    message = exception.message ?: "ошибка обновления задач"
-                )
-            }
+                    _uiState.value = HomeUiState.Error(
+                        message = exception.message ?: "ошибка обновления задач"
+                    )
+                }
 
         }
     }
 
 
-    
     /**
      * Быстро создать задачу на сегодня.
      * @param title Название задачи
@@ -184,7 +187,24 @@ class HomeViewModel @Inject constructor(
         createTask(title = title, description = null, day = today)
 
     }
-    
+
+    fun deleteTaskById(taskId: String) {
+        viewModelScope.launch {
+            Log.i("exception", "func started")
+            deleteTaskUseCase(
+                taskId
+            ).catch { exception ->
+                Log.i("exception", exception.message.toString())
+            }
+                .collect { result ->
+                    result.onFailure { exception ->
+                        Log.i("exception", exception.message.toString())
+                    }
+                }
+        }
+
+    }
+
     /**
      * Создать новую задачу с пользовательскими данными.
      * @param title Название задачи
@@ -198,29 +218,33 @@ class HomeViewModel @Inject constructor(
             if (title.isBlank()) {
                 return@launch
             }
-            
+
             createTaskUseCase(
                 title = title,
                 description = description,
                 day = day
             )
                 .catch { exception ->
-                    _uiEvents.send(UiEvent.ShowError(
-                        ("[Error]HomeViewModel - line181: " + exception.message)
-                    ))
+                    _uiEvents.send(
+                        UiEvent.ShowError(
+                            ("[Error]HomeViewModel - line181: " + exception.message)
+                        )
+                    )
                 }
                 .collect { result ->
                     result.onSuccess {
                         _uiEvents.send(UiEvent.ShowMessage("Задача создана"))
                     }.onFailure { exception ->
-                        _uiEvents.send(UiEvent.ShowError(
-                            ("line189: " + exception.message)
-                        ))
+                        _uiEvents.send(
+                            UiEvent.ShowError(
+                                ("line189: " + exception.message)
+                            )
+                        )
                     }
                 }
         }
     }
-    
+
     /**
      * Обновить статус выполнения задачи.
      * @param task Задача для обновления
@@ -229,18 +253,22 @@ class HomeViewModel @Inject constructor(
     fun updateTaskCompletion(task: Task, isCompleted: Boolean) {
         viewModelScope.launch {
             val updatedTask = task.copy(isCompleted = isCompleted)
-            
+
             updateTaskUseCase(updatedTask)
                 .catch { exception ->
-                    _uiEvents.send(UiEvent.ShowError(
-                        "182" ?: "Ошибка при обновлении задачи"
-                    ))
+                    _uiEvents.send(
+                        UiEvent.ShowError(
+                            "182" ?: "Ошибка при обновлении задачи"
+                        )
+                    )
                 }
                 .collect { result ->
                     result.onFailure { exception ->
-                        _uiEvents.send(UiEvent.ShowError(
-                            "188" ?: "Ошибка при обновлении задачи"
-                        ))
+                        _uiEvents.send(
+                            UiEvent.ShowError(
+                                "188" ?: "Ошибка при обновлении задачи"
+                            )
+                        )
                     }
                 }
         }
