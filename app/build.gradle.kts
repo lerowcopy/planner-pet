@@ -7,11 +7,11 @@ val localProperties = Properties().apply {
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
+    //alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
-    id("org.jetbrains.kotlin.kapt")
-    id("com.google.devtools.ksp")
+    //id("org.jetbrains.kotlin.kapt")
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -53,22 +53,25 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
+    /*kotlin {
+        compilerOptions {
+            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
+        }
+    }*/
+
     buildFeatures {
         compose = true
         buildConfig = true
     }
 }
 
-kapt {
+/*kapt {
     correctErrorTypes = true
-}
+}*/
 
-hilt {
+/*hilt {
     enableAggregatingTask = false
-}
+}*/
 
 dependencies {
     implementation(libs.androidx.core.ktx)
@@ -104,13 +107,16 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.compose.animation.core)
+    implementation(libs.androidx.compose.foundation.layout)
+    implementation(libs.androidx.compose.runtime)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
 
     // Dependency Injection
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
-    kapt(libs.hilt.compiler)
+    //kapt(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
 
     // Navigation
     implementation(libs.androidx.navigation.compose)

@@ -3,6 +3,7 @@ package com.example.pet.presentation.home
 import android.util.Log
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,10 +23,14 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -45,19 +51,28 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.pet.presentation.ui.DatePickerDialog
+import com.example.pet.presentation.ui.TimePickerDialog
 import com.example.pet.presentation.ui.VoiceMicButton
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import kotlinx.coroutines.delay
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlin.math.roundToInt
 
 @OptIn(
@@ -107,18 +122,56 @@ fun HomeScreen(
                     message = event.message,
                     withDismissAction = true
                 )
+
                 is UiEvent.ShowMessage -> snackbarHostState.showSnackbar(
                     message = event.message
                 )
             }
         }
     }
+    val imeDp = with(LocalDensity.current) { imeHeight.toDp() }
+    val animatedPeekHeight by animateDpAsState(
+        targetValue = if (imeHeight > 0) imeDp else 110.dp,
+        animationSpec = tween(50, easing = FastOutSlowInEasing),
+        label = "peekHeight"
+    )
+
+    var showDatePicker by remember { mutableStateOf(false) }
+    var selectedDate by remember { mutableStateOf<Long?>(null) }
+
+    var showTimePicker by remember { mutableStateOf(false) }
+    var selectedTime by remember { mutableStateOf("") }
+
+    selectedDate?.let {
+        val formatted = remember(it) {
+            SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date(it))
+        }
+        Text("Выбрано: $formatted", color = Color.Black)
+        Log.i("date", formatted)
+    }
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismiss = { showDatePicker = false },
+            onDateSelected = { millis -> selectedDate = millis }
+        )
+    }
+
+    if (showTimePicker) {
+        TimePickerDialog(
+            onDismiss = { showTimePicker = false },
+            onTimeSelected = { hour, minute ->
+                selectedTime = "%02d:%02d".format(hour, minute)
+            }
+        )
+    }
+
 
     Box(modifier = modifier.fillMaxSize()) {
 
         BottomSheetScaffold(
             scaffoldState = scaffoldState,
-            sheetPeekHeight = 100.dp,
+            sheetPeekHeight = animatedPeekHeight,
             sheetContent = {
                 Column(
                     modifier = Modifier
@@ -182,7 +235,9 @@ fun HomeScreen(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(32.dp),
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                            alpha = 0.6f
+                                        )
                                     )
                                 } else {
                                     Column(
@@ -196,10 +251,17 @@ fun HomeScreen(
                                                 day = task.day,
                                                 isCompleted = task.isCompleted,
                                                 onCheckedChange = { isCompleted ->
-                                                    viewModel.updateTaskCompletion(task, isCompleted)
+                                                    viewModel.updateTaskCompletion(
+                                                        task,
+                                                        isCompleted
+                                                    )
                                                 },
                                                 onClick = { onTaskClick(task) },
-                                                onClickDeleteTaskById = { viewModel.deleteTaskById(task.id) }
+                                                onClickDeleteTaskById = {
+                                                    viewModel.deleteTaskById(
+                                                        task.id
+                                                    )
+                                                }
                                             )
                                         }
                                     }
@@ -254,46 +316,82 @@ fun HomeScreen(
 
                     IntOffset(
                         x = 0,
-                        y = currentOffset.roundToInt() - 80.dp.roundToPx() - animatedImeHeight
+                        y = currentOffset.roundToInt() - 150.dp.roundToPx()
                     )
                 }
-                .height(80.dp),
+                .height(135.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-            shape = RoundedCornerShape(50.dp)
+            shape = RoundedCornerShape(25.dp)
         ) {
-            Row(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface)
-                    .padding(horizontal = 12.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
+                    .padding(horizontal = 12.dp, vertical = 12.dp)
             ) {
-                OutlinedTextField(
-                    value = quickTaskTitle,
-                    onValueChange = { quickTaskTitle = it },
-                    modifier = Modifier.weight(1f),
-                    placeholder = { Text("Добавить задачу...") },
-                    singleLine = true,
-                    shape = RoundedCornerShape(50.dp)
-                )
+                Row(
+                    modifier = Modifier,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = quickTaskTitle,
+                        onValueChange = { quickTaskTitle = it },
+                        modifier = Modifier.weight(1f),
+                        placeholder = { Text("Добавить задачу...") },
+                        singleLine = true,
+                        shape = RoundedCornerShape(50.dp)
+                    )
 
-                Spacer(modifier = Modifier.padding(4.dp))
+                    Spacer(modifier = Modifier.padding(4.dp))
 
-                VoiceMicButton(
-                    quickTaskTitle = quickTaskTitle,
-                    isRecording = viewModel.isRecording,
-                    isModelLoading = viewModel.isModelLoading,
-                    onSendText = {
-                        viewModel.createQuickTask(quickTaskTitle)
-                        quickTaskTitle = ""
-                    },
-                    onStartVoice = {
-                        if (permissionState.status.isGranted) viewModel.startVoiceInput()
-                        else permissionState.launchPermissionRequest()
-                    },
-                    onStopVoice = { viewModel.stopVoiceInput() }
-                )
+                    VoiceMicButton(
+                        quickTaskTitle = quickTaskTitle,
+                        isRecording = viewModel.isRecording,
+                        isModelLoading = viewModel.isModelLoading,
+                        onSendText = {
+                            viewModel.createQuickTask(quickTaskTitle)
+                            quickTaskTitle = ""
+                        },
+                        onStartVoice = {
+                            if (permissionState.status.isGranted) viewModel.startVoiceInput()
+                            else permissionState.launchPermissionRequest()
+                        },
+                        onStopVoice = { viewModel.stopVoiceInput() }
+                    )
+                }
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .offset(y = 15.dp)
+                ) {
+                    Button(
+                        modifier = Modifier.height(40.dp).width(142.dp),
+                        onClick = {
+                            showDatePicker = true
+                        }
+                    ) {
+                        Text(
+                            text = selectedDate?.let {
+                                SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date(it))
+                            } ?: "Выбрать дату"
+                        )
+                    }
+
+                    Button(
+                        modifier = Modifier.height(40.dp).width(154.dp),
+                        onClick = {
+                            showTimePicker = true
+                        }
+                    ) {
+                        Text(
+                            text = selectedTime.ifEmpty { "Выбрать время" }
+                        )
+                    }
+                }
             }
+
         }
     }
 }
