@@ -6,6 +6,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.pet.presentation.calendar.CalendarScreen
 import com.example.pet.presentation.home.HomeScreen
 import com.example.pet.presentation.taskdetail.TaskDetailScreen
 
@@ -25,7 +26,16 @@ fun NavGraph(
             HomeScreen(
                 onTaskClick = { task ->
                     navController.navigate(Screen.TaskDetail.createRoute(task.id))
+                },
+                onCalendarClick = {
+                    navController.navigate(Screen.Calendar.route)
                 }
+            )
+        }
+
+        composable(Screen.Calendar.route) {
+            CalendarScreen(
+                onBackClick = { navController.popBackStack() }
             )
         }
         
@@ -47,6 +57,7 @@ fun NavGraph(
  */
 sealed class Screen(val route: String) {
     data object Home : Screen("home")
+    data object Calendar: Screen("calendar")
     
     data object TaskDetail : Screen("task_detail/{taskId}") {
         val arguments = listOf(

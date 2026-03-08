@@ -10,6 +10,8 @@ fun TaskEntity.toCreateDto(): CreateTaskDto {
         title = this.title,
         description = this.description,
         day = this.day,
+        startMinutes = this.startMinutes,
+        endMinutes = this.endMinutes,
         isCompleted = this.isCompleted,
         isSynced = this.isSynced
     )
@@ -20,6 +22,8 @@ fun TaskEntity.toDomain() = Task(
     title = this.title,
     description = this.description,
     day = this.day,
+    startMinutes = this.startMinutes,
+    endMinutes = this.endMinutes,
     isCompleted = this.isCompleted,
     isSynced = this.isSynced
 )

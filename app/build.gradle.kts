@@ -109,6 +109,7 @@ dependencies {
     implementation(libs.androidx.compose.animation.core)
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.compose.runtime)
+    implementation(libs.androidx.material3)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
 

@@ -29,12 +29,15 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -84,6 +87,7 @@ import kotlin.math.roundToInt
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     onTaskClick: (com.example.pet.domain.model.Task) -> Unit = {},
+    onCalendarClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     // Состояния
@@ -166,6 +170,12 @@ fun HomeScreen(
         )
     }
 
+    fun timeStringToMinutes(time: String): Int {
+        if (time.isEmpty()) return 0
+        val parts = time.split(":")
+        return parts[0].toInt() * 60 + parts[1].toInt()
+    }
+
 
     Box(modifier = modifier.fillMaxSize()) {
 
@@ -177,9 +187,20 @@ fun HomeScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(500.dp)
-                        .padding(16.dp)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("Sheet Content")
+                    Button(
+                        onClick = onCalendarClick,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CalendarMonth,
+                            contentDescription = null,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        Text("Открыть календарь")
+                    }
                 }
             }
         ) { innerPadding ->
@@ -349,8 +370,21 @@ fun HomeScreen(
                         isRecording = viewModel.isRecording,
                         isModelLoading = viewModel.isModelLoading,
                         onSendText = {
-                            viewModel.createQuickTask(quickTaskTitle)
+                            val startMinutes = timeStringToMinutes(selectedTime)
+                            val day = selectedDate?.let {
+                                SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(it))
+                            } ?: SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+
+
+                            viewModel.createTask(
+                                quickTaskTitle,
+                                day = day,
+                                startMinutes = startMinutes,
+                                endMinutes = startMinutes + 60
+                            )
                             quickTaskTitle = ""
+                            selectedTime = ""
+                            selectedDate = null
                         },
                         onStartVoice = {
                             if (permissionState.status.isGranted) viewModel.startVoiceInput()
@@ -367,7 +401,9 @@ fun HomeScreen(
                         .offset(y = 15.dp)
                 ) {
                     Button(
-                        modifier = Modifier.height(40.dp).width(142.dp),
+                        modifier = Modifier
+                            .height(40.dp)
+                            .width(142.dp),
                         onClick = {
                             showDatePicker = true
                         }
@@ -380,7 +416,9 @@ fun HomeScreen(
                     }
 
                     Button(
-                        modifier = Modifier.height(40.dp).width(154.dp),
+                        modifier = Modifier
+                            .height(40.dp)
+                            .width(154.dp),
                         onClick = {
                             showTimePicker = true
                         }

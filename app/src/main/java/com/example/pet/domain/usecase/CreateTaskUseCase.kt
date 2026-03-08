@@ -22,9 +22,11 @@ class CreateTaskUseCase @Inject constructor(
     suspend operator fun invoke(
         title: String,
         description: String? = null,
-        day: String
+        day: String,
+        startMinutes: Int = 0,
+        endMinutes: Int = 60
     ): Flow<Result<Task>> {
-        return taskRepository.createTask(title, description, day)
+        return taskRepository.createTask(title, description, day, startMinutes, endMinutes)
     }
 }
 

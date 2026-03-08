@@ -13,19 +13,25 @@ import com.example.pet.domain.repository.TaskRepository
 import com.example.pet.domain.usecase.CreateTaskFromTextUseCase
 import com.example.pet.domain.usecase.CreateTaskUseCase
 import com.example.pet.domain.usecase.DeleteTaskUseCase
+import com.example.pet.domain.usecase.GetTasksByDayUseCase
 import com.example.pet.domain.usecase.GetTasksUseCase
 import com.example.pet.domain.usecase.RefreshTasksUseCase
 import com.example.pet.domain.usecase.UpdateTaskUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -40,6 +46,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val getTasksUseCase: GetTasksUseCase,
+    private val getTasksByDayUseCase: GetTasksByDayUseCase,
     private val createTaskUseCase: CreateTaskUseCase,
     private val updateTaskUseCase: UpdateTaskUseCase,
     private val refreshTasksUseCase: RefreshTasksUseCase,
@@ -53,6 +60,24 @@ class HomeViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+
+    private val _selectedDay = MutableStateFlow(
+        SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+    )
+    val selectedDay: StateFlow<String> = _selectedDay.asStateFlow()
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val tasksForSelectedDay: StateFlow<List<Task>> = _selectedDay
+        .flatMapLatest { day ->
+            getTasksByDayUseCase(day)
+                .map { result -> result.getOrElse { emptyList() } }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
 
     private val _uiEvents = Channel<UiEvent>()
     val uiEvents = _uiEvents.receiveAsFlow()
@@ -68,6 +93,10 @@ class HomeViewModel @Inject constructor(
         refreshFromNetwork()
         loadVoiceModel()
 
+    }
+
+    fun onDaySelected(day: String) {
+        _selectedDay.value = day
     }
 
     private fun loadVoiceModel() {
@@ -182,9 +211,15 @@ class HomeViewModel @Inject constructor(
      * Быстро создать задачу на сегодня.
      * @param title Название задачи
      */
-    fun createQuickTask(title: String) {
+    fun createQuickTask(title: String, startMinutes: Int = 0, endMinutes: Int = 60) {
         val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-        createTask(title = title, description = null, day = today)
+        createTask(
+            title = title,
+            description = null,
+            day = today,
+            startMinutes = startMinutes,
+            endMinutes = endMinutes
+        )
 
     }
 
@@ -212,7 +247,13 @@ class HomeViewModel @Inject constructor(
      * @param day День выполнения задачи
      * Список задач обновится автоматически через систему событий.
      */
-    fun createTask(title: String, description: String? = null, day: String) {
+    fun createTask(
+        title: String,
+        description: String? = null,
+        day: String,
+        startMinutes: Int = 0,
+        endMinutes: Int = 60
+    ) {
         viewModelScope.launch {
             // Убеждаемся, что title не пустой
             if (title.isBlank()) {
@@ -222,7 +263,9 @@ class HomeViewModel @Inject constructor(
             createTaskUseCase(
                 title = title,
                 description = description,
-                day = day
+                day = day,
+                startMinutes = startMinutes,
+                endMinutes = endMinutes
             )
                 .catch { exception ->
                     _uiEvents.send(

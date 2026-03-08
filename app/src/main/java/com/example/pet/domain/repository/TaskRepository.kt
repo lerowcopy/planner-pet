@@ -39,7 +39,9 @@ interface TaskRepository {
     suspend fun createTask(
         title: String,
         description: String? = null,
-        day: String
+        day: String,
+        startMinutes: Int,
+        endMinutes: Int
     ): Flow<Result<Task>>
     
     /**

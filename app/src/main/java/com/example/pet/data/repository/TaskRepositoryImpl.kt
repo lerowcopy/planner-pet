@@ -74,10 +74,15 @@ class TaskRepositoryImpl @Inject constructor(
     }
 
     override suspend fun createTask(
-        title: String, description: String?, day: String
+        title: String, description: String?, day: String, startMinutes: Int, endMinutes: Int
     ): Flow<Result<Task>> = flow {
         val createTaskDto = com.example.pet.data.model.CreateTaskDto(
-            title = title, description = description, day = day, isCompleted = false
+            title = title,
+            description = description,
+            day = day,
+            isCompleted = false,
+            startMinutes = startMinutes,
+            endMinutes = endMinutes
         )
 
         val tempEntity = createTaskDto.toEntity();
@@ -160,7 +165,7 @@ class TaskRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteTask(taskId: String): Flow<Result<Unit>> = flow {
-        withContext(Dispatchers.IO){
+        withContext(Dispatchers.IO) {
             Log.i("exception", taskId)
             taskDao.deleteById(taskId)
         }
@@ -177,7 +182,7 @@ class TaskRepositoryImpl @Inject constructor(
     override suspend fun createTaskFromText(input: String): TaskEntity {
         if (parser.parse(input) == null) Log.i("ai", "ошибка создания")
         val dto = parser.parse(input) ?: throw Exception("Не удалось распарсить задачу")
-        withContext(Dispatchers.IO){
+        withContext(Dispatchers.IO) {
             taskDao.insertTask(dto.toEntity())
         }
         return dto.toEntity()

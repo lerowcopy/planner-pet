@@ -13,6 +13,12 @@ data class TaskEntity (
     val description: String,
     val day: String,
 
+    @ColumnInfo(defaultValue = "0")
+    val startMinutes: Int = 0,
+
+    @ColumnInfo(defaultValue = "0")
+    val endMinutes: Int = 0,
+
     @ColumnInfo(defaultValue = "false")
     val isCompleted: Boolean = false,
 

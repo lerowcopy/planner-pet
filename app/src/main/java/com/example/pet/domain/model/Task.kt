@@ -12,6 +12,8 @@ data class Task(
     val title: String,
     val description: String? = null,
     val day: String,
+    val startMinutes: Int,
+    val endMinutes: Int,
     val isCompleted: Boolean = false,
     val isSynced: Boolean = false
 )
@@ -23,17 +25,21 @@ fun Task.toEntity(): TaskEntity {
         title = this.title,
         description = this.description ?: "",
         day = this.day,
+        startMinutes = this.startMinutes,
+        endMinutes = this.endMinutes,
         isCompleted = this.isCompleted
     )
 }
 
 fun Task.toDto(): TaskDto {
     return TaskDto(
-        id = id,
-        title = title,
-        description = description,
-        day = day,
-        isCompleted = isCompleted
+        id = this.id,
+        title = this.title,
+        description = this.description,
+        day = this.day,
+        startMinutes = this.startMinutes,
+        endMinutes = this.endMinutes,
+        isCompleted = this.isCompleted
     )
 }
 
