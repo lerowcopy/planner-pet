@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.pet.domain.model.Task
 import com.example.pet.domain.usecase.DeleteTaskUseCase
 import com.example.pet.domain.usecase.GetTaskByIdUseCase
+import com.example.pet.domain.usecase.UpdateTaskUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,7 +20,8 @@ import javax.inject.Inject
 @HiltViewModel
 class TaskDetailViewModel @Inject constructor(
     private val getTaskByIdUseCase: GetTaskByIdUseCase,
-    private val deleteTaskUseCase: DeleteTaskUseCase
+    private val deleteTaskUseCase: DeleteTaskUseCase,
+    private val updateTaskUseCase: UpdateTaskUseCase
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow<TaskDetailUiState>(TaskDetailUiState.Loading)
@@ -68,6 +70,21 @@ class TaskDetailViewModel @Inject constructor(
                 }
                 .collect { result ->
                     _deleteResult.value = result
+                }
+        }
+    }
+
+    fun toggleTaskCompletion(task: Task) {
+        viewModelScope.launch {
+            val updated = task.copy(isCompleted = !task.isCompleted)
+            updateTaskUseCase(updated)
+                .catch { exception ->
+                    // переиспользуем существующий _deleteResult или заводи отдельный _uiEvent
+                }
+                .collect { result ->
+                    result.onSuccess {
+                        _uiState.value = TaskDetailUiState.Success(updated)
+                    }
                 }
         }
     }

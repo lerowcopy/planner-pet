@@ -16,7 +16,7 @@ sealed interface TaskDetailUiState {
      * @param task Задача
      */
     data class Success(val task: Task) : TaskDetailUiState
-    
+
     /**
      * Ошибка при загрузке данных.
      * @param message Сообщение об ошибке

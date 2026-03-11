@@ -116,6 +116,7 @@ dependencies {
     // Dependency Injection
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
     //kapt(libs.hilt.compiler)
     ksp(libs.hilt.compiler)
 

@@ -17,6 +17,7 @@ import com.example.pet.domain.usecase.GetTasksByDayUseCase
 import com.example.pet.domain.usecase.GetTasksUseCase
 import com.example.pet.domain.usecase.RefreshTasksUseCase
 import com.example.pet.domain.usecase.UpdateTaskUseCase
+import com.example.pet.presentation.taskdetail.TaskDetailUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

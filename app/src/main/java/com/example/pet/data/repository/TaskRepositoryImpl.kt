@@ -175,7 +175,7 @@ class TaskRepositoryImpl @Inject constructor(
             // Используем tryEmit, чтобы не блокировать выполнение
             _taskEvents.tryEmit(TaskEvent.TaskDeleted(taskId))
         }
-        //emit(result)
+        emit(result)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
