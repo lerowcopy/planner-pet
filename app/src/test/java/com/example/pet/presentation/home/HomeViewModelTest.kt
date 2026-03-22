@@ -56,7 +56,7 @@ class HomeViewModelTest {
         refreshTasksUseCase = mockk()
         createTaskFromTextUseCase = mockk()
         deleteTaskUseCase = mockk()
-        speechToTextService = mockk(relaxed = true)
+        speechToTextService = mockk(relaxed = true, relaxUnitFun = true)
         taskRepository = mockk()
 
         every { taskRepository.taskEvents } returns MutableSharedFlow()
