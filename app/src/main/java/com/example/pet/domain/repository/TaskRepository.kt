@@ -1,26 +1,26 @@
 package com.example.pet.domain.repository
 
+import androidx.paging.PagingData
 import com.example.pet.data.local.entity.TaskEntity
 import com.example.pet.domain.model.Task
 import com.example.pet.domain.model.TaskEvent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
 
-/**
- * Интерфейс репозитория для работы с задачами.
- * Определяет контракт для получения данных из разных источников (сеть, база данных и т.д.).
- */
 interface TaskRepository {
-    /**
-     * Поток событий об изменениях задач.
-     * Подписываясь на этот поток, можно получать уведомления о создании, обновлении или удалении задач.
-     */
+
     val taskEvents: SharedFlow<TaskEvent>
     /**
      * Получить список всех задач.
      * @return Flow со списком задач
      */
     fun getTasks(): Flow<Result<List<Task>>>
+
+    /**
+     * Получить список всех задач.
+     * @return Flow со списком задач
+     */
+    fun getTasksPaged(): Flow<PagingData<Task>>
     
     /**
      * Получить задачу по ID.

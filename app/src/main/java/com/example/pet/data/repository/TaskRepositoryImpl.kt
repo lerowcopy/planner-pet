@@ -4,6 +4,10 @@ import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.map
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
@@ -13,7 +17,6 @@ import androidx.work.WorkManager
 import com.example.pet.data.local.dao.TaskDao
 import com.example.pet.data.local.entity.TaskEntity
 import com.example.pet.data.mapper.toDomain
-import com.example.pet.data.model.toDomain
 import com.example.pet.data.model.toEntity
 import com.example.pet.data.remote.GeminiTaskParser
 import com.example.pet.data.remote.TaskRemoteDataSource
@@ -37,10 +40,6 @@ import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-/**
- * Реализация репозитория для работы с задачами.
- * Координирует работу с разными источниками данных (сеть, локальная БД и т.д.).
- */
 class TaskRepositoryImpl @Inject constructor(
     private val remoteDataSource: TaskRemoteDataSource,
     private val taskDao: TaskDao,
@@ -54,12 +53,25 @@ class TaskRepositoryImpl @Inject constructor(
     override val taskEvents: SharedFlow<TaskEvent> = _taskEvents.asSharedFlow()
 
     override fun getTasks(): Flow<Result<List<Task>>> {
-        return taskDao.getTasks() // DAO должен возвращать Flow<List<TaskEntity>>
+        return taskDao.getTasks()
             .map { entities ->
                 Result.success(entities.map { it.toDomain() })
             }.catch { exception ->
                 emit(Result.failure(exception))
             }.flowOn(Dispatchers.IO)
+    }
+
+    override fun getTasksPaged(): Flow<PagingData<Task>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 20,
+                prefetchDistance = 5,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = { taskDao.getTasksPaged() }
+        ).flow
+            .map { pagingData -> pagingData.map { it.toDomain() } }
+            .flowOn(Dispatchers.IO)
     }
 
     override suspend fun getTaskById(taskId: String): Flow<Result<Task>> = flow {
@@ -68,9 +80,6 @@ class TaskRepositoryImpl @Inject constructor(
             tempTask = taskDao.getTaskById(taskId)
         }
         emit(Result.success(tempTask.toDomain()))
-
-        /*val result = remoteDataSource.getTaskById(taskId)
-        emit(result.mapCatching { it.toDomain() })*/
     }
 
     override suspend fun createTask(
@@ -102,21 +111,9 @@ class TaskRepositoryImpl @Inject constructor(
                 }
             }.onFailure { exception ->
                 enqueueSyncWorker()
-                Log.i("exception", "TaskRepositoryImpl line 84: " + exception.message.toString())
+                Log.i("TaskRepositoryImpl", "line 84: " + exception.message.toString())
             }
 
-        /*val result = remoteDataSource.createTask(createTaskDto)
-        result.onSuccess { taskDto ->
-            //val task = taskDto.toDomain()
-
-            withContext(Dispatchers.IO) {
-                taskDao.insertTask(taskDto.toEntity())
-            }
-
-                //_taskEvents.tryEmit(TaskEvent.TaskCreated(task))
-        }
-
-        emit(result.mapCatching { it.toDomain() })*/
     }
 
     private fun enqueueSyncWorker() {
@@ -131,8 +128,8 @@ class TaskRepositoryImpl @Inject constructor(
 
         WorkManager.getInstance(context)
             .enqueueUniqueWork(
-                "sync_tasks",                        // уникальное имя
-                ExistingWorkPolicy.KEEP,             // не создавать дубликаты
+                "sync_tasks",
+                ExistingWorkPolicy.KEEP,
                 syncRequest
             )
     }
@@ -147,8 +144,8 @@ class TaskRepositoryImpl @Inject constructor(
         remoteDataSource.updateTask(taskDto)
             .onFailure { exception ->
                 Log.i(
-                    "exception",
-                    "[Network error] TaskRepositoryImpl - line 101: " + exception.message
+                    "TaskRepositoryImpl",
+                    "line 101: " + exception.message
                 )
             }
 
@@ -166,16 +163,18 @@ class TaskRepositoryImpl @Inject constructor(
 
     override suspend fun deleteTask(taskId: String): Flow<Result<Unit>> = flow {
         withContext(Dispatchers.IO) {
-            Log.i("exception", taskId)
             taskDao.deleteById(taskId)
         }
 
-        val result = remoteDataSource.deleteTask(taskId)
-        result.onSuccess {
-            // Используем tryEmit, чтобы не блокировать выполнение
-            _taskEvents.tryEmit(TaskEvent.TaskDeleted(taskId))
-        }
-        emit(result)
+        emit(Result.success(Unit))
+
+        remoteDataSource.deleteTask(taskId)
+            .onSuccess {
+                _taskEvents.tryEmit(TaskEvent.TaskDeleted(taskId))
+            }
+            .onFailure { exception ->
+                Log.w("TaskRepository", "Remote delete failed, will retry: ${exception.message}")
+            }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

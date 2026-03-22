@@ -1,7 +1,7 @@
 package com.example.pet.data.local.dao
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -14,6 +14,9 @@ interface TaskDao {
 
     @Query("SELECT * FROM tasks")
     fun getTasks(): Flow<List<TaskEntity>>
+
+    @Query("SELECT * FROM tasks ORDER BY id DESC")
+    fun getTasksPaged(): PagingSource<Int, TaskEntity>
 
     @Query("SELECT * FROM tasks WHERE id = :taskId")
     fun getTaskById(taskId: String): TaskEntity
