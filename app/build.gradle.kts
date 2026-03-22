@@ -29,6 +29,10 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
+
     buildTypes {
         debug {
             buildConfigField(
@@ -85,6 +89,10 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.core)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.accompanist.permissions)
+    implementation(libs.androidx.paging.runtime)
+    implementation(libs.androidx.paging.compose)
+    implementation(libs.androidx.room.paging)
+
     // Voice Recognizer
     implementation(libs.vosk.android)
 
@@ -97,6 +105,13 @@ dependencies {
 
     // Gemini
     implementation(libs.generativeai)
+    implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.foundation.layout)
+
+    // Tests
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
 
     // Network
     implementation(libs.retrofit)

@@ -28,6 +28,12 @@ animationCore = "1.10.4"
 foundationLayout = "1.10.4"
 runtime = "1.10.4"
 material3 = "1.4.0"
+mockk = "1.13.12"
+coroutinesTest = "1.9.0"
+turbine = "1.2.0"
+paging = "3.3.6"
+foundation = "1.10.5"
+foundationLayoutVersion = "1.10.5"
 
 [libraries]
 androidx-hilt-lifecycle-viewmodel-compose = { group = "androidx.hilt", name = "hilt-lifecycle-viewmodel-compose", version.ref = "hiltLifecycleViewmodelCompose" }
@@ -49,6 +55,14 @@ androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "u
 androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-paging-runtime = { group = "androidx.paging", name = "paging-runtime", version.ref = "paging" }
+androidx-paging-compose = { group = "androidx.paging", name = "paging-compose", version.ref = "paging" }
+androidx-room-paging = { group = "androidx.room", name = "room-paging", version.ref = "roomRuntime" }
+
+# Test
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutinesTest" }
+turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 
 # Network
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
@@ -80,6 +94,8 @@ androidx-compose-animation-core = { group = "androidx.compose.animation", name =
 androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
+androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
+androidx-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayoutVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
