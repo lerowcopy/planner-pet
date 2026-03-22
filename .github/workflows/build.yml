@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      JAVA_TOOL_OPTIONS: -Djava.awt.headless=true
 
     steps:
       - name: Checkout code
@@ -40,4 +42,4 @@ jobs:
         run: ./gradlew assembleDebug
 
       - name: Run unit tests
-        run: ./gradlew test --info 2>&1 | tail -100
+        run: ./gradlew test --info

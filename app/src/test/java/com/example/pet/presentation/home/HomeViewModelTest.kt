@@ -1,5 +1,6 @@
 package com.example.pet.presentation.home
 
+import androidx.paging.PagingData
 import app.cash.turbine.test
 import com.example.pet.data.audio.SpeechToTextService
 import com.example.pet.domain.model.Task
@@ -60,6 +61,8 @@ class HomeViewModelTest {
         taskRepository = mockk()
 
         every { taskRepository.taskEvents } returns MutableSharedFlow()
+
+        every { taskRepository.getTasksPaged() } returns flowOf(PagingData.empty())
 
         every { getTasksUseCase() } returns flowOf(Result.success(emptyList()))
 
