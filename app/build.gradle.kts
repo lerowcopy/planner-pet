@@ -7,10 +7,8 @@ val localProperties = Properties().apply {
 
 plugins {
     alias(libs.plugins.android.application)
-    //alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
-    //id("org.jetbrains.kotlin.kapt")
     alias(libs.plugins.ksp)
 }
 
@@ -57,25 +55,12 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    /*kotlin {
-        compilerOptions {
-            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11
-        }
-    }*/
 
     buildFeatures {
         compose = true
         buildConfig = true
     }
 }
-
-/*kapt {
-    correctErrorTypes = true
-}*/
-
-/*hilt {
-    enableAggregatingTask = false
-}*/
 
 dependencies {
     implementation(libs.androidx.core.ktx)
@@ -145,4 +130,11 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+}
+
+tasks.withType<Test> {
+    testLogging {
+        events("passed", "failed", "skipped")
+        showStandardStreams = true
+    }
 }
