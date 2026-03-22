@@ -1,12 +1,14 @@
 package com.example.pet.presentation.taskdetail
 
+import java.util.Locale
+
 enum class TaskDayStatus {
     TODAY, TOMORROW, UPCOMING, OVERDUE
 }
 
 fun getTaskDayStatus(day: String): TaskDayStatus {
     return try {
-        val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+        val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val taskDate = sdf.parse(day) ?: return TaskDayStatus.UPCOMING
 
         val today = java.util.Calendar.getInstance().apply {
@@ -41,7 +43,7 @@ fun getTaskDayStatus(day: String): TaskDayStatus {
 
 fun formatTaskDay(day: String): String {
     return try {
-        val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+        val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val taskDate = sdf.parse(day) ?: return day
 
         val today = java.util.Calendar.getInstance().apply {
@@ -68,7 +70,7 @@ fun formatTaskDay(day: String): String {
             tomorrow.timeInMillis -> "Завтра"
             else -> {
                 val dayOfMonth = taskCal.get(java.util.Calendar.DAY_OF_MONTH)
-                val dayOfWeek = java.text.SimpleDateFormat("EE", java.util.Locale("ru"))
+                val dayOfWeek = java.text.SimpleDateFormat("EE", Locale.forLanguageTag("ru"))
                     .format(taskDate)
                     .replaceFirstChar { it.uppercaseChar() }
                 "$dayOfMonth, $dayOfWeek"

@@ -48,7 +48,6 @@ fun TaskDetailSuccessContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Заголовок задачи
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -78,7 +77,6 @@ fun TaskDetailSuccessContent(
 
                     Spacer(modifier = Modifier.width(12.dp))
 
-                    // Бейдж статуса
                     Surface(
                         shape = MaterialTheme.shapes.small,
                         color = if (task.isCompleted) {
@@ -130,7 +128,6 @@ fun TaskDetailSuccessContent(
             }
         }
 
-        // Срок выполнения
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -183,7 +180,6 @@ fun TaskDetailSuccessContent(
             }
         }
 
-        // ID задачи
         Text(
             text = "ID: ${task.id}",
             style = MaterialTheme.typography.labelSmall,

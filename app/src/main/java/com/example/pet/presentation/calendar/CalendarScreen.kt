@@ -13,13 +13,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -35,10 +32,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButtonDefaults.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -51,7 +46,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
@@ -65,8 +59,8 @@ fun CalendarScreen(
     val listState = rememberLazyListState()
     val daysOfWeek = listOf("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
 
-    val TOTAL_WEEKS = 200        // всего недель
-    val START_WEEK = 100         // центр — текущая неделя
+    val TOTAL_WEEKS = 200
+    val START_WEEK = 100
 
     val calendar = remember { java.util.Calendar.getInstance() }
 
@@ -74,7 +68,6 @@ fun CalendarScreen(
         (calendar.get(java.util.Calendar.DAY_OF_WEEK) + 5) % 7
     }
 
-    // ✅ Генерируем даты для любой недели относительно текущей
     fun getWeekDates(weekOffset: Int): List<Pair<Int, Int>> {
         val startOfWeek = calendar.clone() as java.util.Calendar
         val diff = (calendar.get(java.util.Calendar.DAY_OF_WEEK) + 5) % 7
@@ -105,7 +98,6 @@ fun CalendarScreen(
         currentYear.value = getWeekYear(weekOffset)
     }
 
-// ✅ Стартуем с центра
     LaunchedEffect(Unit) {
         listState.scrollToItem(START_WEEK)
     }
@@ -141,7 +133,6 @@ fun CalendarScreen(
                 .fillMaxWidth(),
 
         ) {
-            // ✅ Заголовок с выбором месяца
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -157,7 +148,7 @@ fun CalendarScreen(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
-                        text = "${monthNames[currentMonth.value]} ${currentYear.value}",
+                        text = "${monthNames[currentMonth.intValue]} ${currentYear.intValue}",
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -172,7 +163,6 @@ fun CalendarScreen(
                 }
             }
 
-            // ✅ Пикер месяца
             AnimatedVisibility(visible = showMonthPicker) {
                 LazyRow(
                     modifier = Modifier
@@ -183,9 +173,8 @@ fun CalendarScreen(
                 ) {
                     itemsIndexed(monthNames) { index, month ->
                         FilterChip(
-                            selected = index == currentMonth.value,
+                            selected = index == currentMonth.intValue,
                             onClick = {
-                                // Ищем ближайшую неделю с нужным месяцем
                                 val currentWeekOffset = listState.firstVisibleItemIndex - START_WEEK
                                 var targetWeek = START_WEEK
                                 for (offset in -52..52) {
@@ -206,7 +195,6 @@ fun CalendarScreen(
                 }
             }
 
-            // ✅ Календарная строка
             LazyRow(
                 state = listState,
                 modifier = Modifier

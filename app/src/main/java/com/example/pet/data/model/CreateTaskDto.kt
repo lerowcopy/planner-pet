@@ -2,11 +2,7 @@ package com.example.pet.data.model
 
 import com.example.pet.data.local.entity.TaskEntity
 import com.google.gson.annotations.SerializedName
-import java.util.UUID
 
-/**
- * DTO для создания новой задачи.
- */
 data class CreateTaskDto(
     @SerializedName("title")
     val title: String,

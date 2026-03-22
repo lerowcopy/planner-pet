@@ -10,10 +10,6 @@ import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
 
-/**
- * API сервис для работы с задачами.
- * Определяет endpoints для сетевых запросов.
- */
 interface TaskApiService {
     /**
      * Получить список всех задач.

@@ -10,9 +10,6 @@ import com.example.pet.presentation.calendar.CalendarScreen
 import com.example.pet.presentation.home.HomeScreen
 import com.example.pet.presentation.taskdetail.TaskDetailScreen
 
-/**
- * Граф навигации приложения.
- */
 @Composable
 fun NavGraph(
     navController: NavHostController,
@@ -52,9 +49,6 @@ fun NavGraph(
     }
 }
 
-/**
- * Определение экранов приложения.
- */
 sealed class Screen(val route: String) {
     data object Home : Screen("home")
     data object Calendar: Screen("calendar")

@@ -42,9 +42,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.pet.ui.theme.PetTheme
 
-/**
- * Экран детальной информации о задаче.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskDetailScreen(
@@ -54,7 +51,6 @@ fun TaskDetailScreen(
     modifier: Modifier = Modifier
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle()
-    val deleteResult = viewModel.deleteResult.collectAsStateWithLifecycle()
 
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showErrorDialog by remember { mutableStateOf<String?>(null) }
@@ -63,11 +59,12 @@ fun TaskDetailScreen(
         if (taskId.isNotEmpty()) viewModel.loadTask(taskId)
     }
 
-    LaunchedEffect(deleteResult.value) {
-        deleteResult.value?.onSuccess {
-            onBackClick()
-        }?.onFailure { exception ->
-            showErrorDialog = exception.message ?: "Не удалось удалить задачу"
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is TaskDetailEvent.DeleteSuccess -> onBackClick()
+                is TaskDetailEvent.DeleteError   -> showErrorDialog = event.message
+            }
         }
     }
 
@@ -91,7 +88,6 @@ fun TaskDetailScreen(
                     }
                 },
                 actions = {
-                    // Убрали DropdownMenu — кнопка удаления вынесена напрямую
                     IconButton(onClick = { showDeleteDialog = true }) {
                         Icon(
                             imageVector = Icons.Outlined.DeleteOutline,
@@ -108,7 +104,6 @@ fun TaskDetailScreen(
             )
         },
         bottomBar = {
-            // Показываем bottomBar только когда данные загружены
             val currentState = uiState.value
             if (currentState is TaskDetailUiState.Success) {
                 TaskDetailBottomBar(
@@ -126,7 +121,6 @@ fun TaskDetailScreen(
         )
     }
 
-    // Диалог подтверждения удаления
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
@@ -172,12 +166,10 @@ fun TaskDetailScreen(
         )
     }
 
-    // Диалог ошибки
     showErrorDialog?.let { errorMessage ->
         AlertDialog(
             onDismissRequest = {
                 showErrorDialog = null
-                viewModel.clearDeleteResult()
             },
             icon = {
                 Icon(
@@ -198,7 +190,6 @@ fun TaskDetailScreen(
                 FilledTonalButton(
                     onClick = {
                         showErrorDialog = null
-                        viewModel.clearDeleteResult()
                     }
                 ) {
                     Text("OK")

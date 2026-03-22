@@ -2,10 +2,7 @@ package com.example.pet.presentation.home
 
 import com.example.pet.domain.model.Task
 
-/**
- * UI состояние экрана Home.
- * Представляет все возможные состояния экрана для отображения в UI.
- */
+
 sealed interface HomeUiState {
     /**
      * Инициализация / загрузка.
@@ -30,9 +27,7 @@ sealed interface HomeUiState {
     data class Error(val message: String) : HomeUiState
 }
 
-/**
- * Одноразовые UI события для показа пользователю.
- */
+
 sealed interface UiEvent {
     /**
      * Показать сообщение об ошибке.

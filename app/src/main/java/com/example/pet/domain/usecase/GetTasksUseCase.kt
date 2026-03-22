@@ -7,10 +7,6 @@ import kotlinx.coroutines.flow.flowOn
 import okhttp3.Dispatcher
 import javax.inject.Inject
 
-/**
- * Use case для получения списка задач.
- * Инкапсулирует бизнес-логику получения задач.
- */
 class GetTasksUseCase @Inject constructor(
     private val taskRepository: TaskRepository
 ) {

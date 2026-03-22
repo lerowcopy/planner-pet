@@ -34,9 +34,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-/**
- * BottomSheet для создания новой задачи.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateTaskBottomSheet(
@@ -49,7 +46,7 @@ fun CreateTaskBottomSheet(
     var showDatePicker by remember { mutableStateOf(false) }
     
     val dateFormatter = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-    val dayFormatter = SimpleDateFormat("EEEE", Locale("ru"))
+    val dayFormatter = SimpleDateFormat("EEEE", Locale.forLanguageTag("ru"))
     
     val datePickerState = rememberDatePickerState(
         initialSelectedDateMillis = selectedDateMillis
@@ -75,7 +72,6 @@ fun CreateTaskBottomSheet(
             singleLine = true
         )
         
-        // Поле для отображения выбранной даты с иконкой календаря
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -153,7 +149,6 @@ fun CreateTaskBottomSheet(
         }
     }
     
-    // DatePicker Dialog
     if (showDatePicker) {
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },

@@ -21,8 +21,8 @@ sealed class NetworkException(message: String) : Exception(message) {
     /**
      * Timeout error.
      */
-    object TimeoutError : NetworkException("Request timeout")
-    
+    class TimeoutError : NetworkException("Request timeout")
+
     /**
      * Unknown error.
      */

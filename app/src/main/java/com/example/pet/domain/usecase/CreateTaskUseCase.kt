@@ -5,10 +5,6 @@ import com.example.pet.domain.repository.TaskRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-/**
- * Use case для создания новой задачи.
- * Инкапсулирует бизнес-логику создания задачи.
- */
 class CreateTaskUseCase @Inject constructor(
     private val taskRepository: TaskRepository
 ) {

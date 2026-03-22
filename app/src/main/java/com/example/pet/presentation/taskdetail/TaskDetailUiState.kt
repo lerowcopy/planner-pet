@@ -2,9 +2,6 @@ package com.example.pet.presentation.taskdetail
 
 import com.example.pet.domain.model.Task
 
-/**
- * UI состояние экрана детальной информации о задаче.
- */
 sealed interface TaskDetailUiState {
     /**
      * Инициализация / загрузка.

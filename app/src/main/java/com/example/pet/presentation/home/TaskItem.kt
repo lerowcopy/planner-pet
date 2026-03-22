@@ -74,7 +74,6 @@ fun TaskItem(
     val formattedDay = remember(day) { formatTaskDay(day) }
     val dayStatus = remember(day) { getTaskDayStatus(day) }
 
-    // Chip
     val isOverdue = dayStatus == TaskDayStatus.OVERDUE && !isCompleted
 
     val chipContainerColor = when {
@@ -93,7 +92,6 @@ fun TaskItem(
 
 
     Column(modifier = modifier.fillMaxWidth()) {
-        // Основная карточка задачи
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
@@ -122,7 +120,6 @@ fun TaskItem(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // MD3 Checkbox → заменяем на IconButton для лучшего touch target
                 IconButton(
                     onClick = { onCheckedChange(!isCompleted) },
                     modifier = Modifier.size(24.dp)
@@ -143,7 +140,6 @@ fun TaskItem(
                     )
                 }
 
-                // Текстовый блок
                 Column(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(2.dp)
@@ -172,7 +168,6 @@ fun TaskItem(
                     }
                 }
 
-                // Chip с датой — MD3 Assist chip семантика
                 Surface(
                     shape = MaterialTheme.shapes.small,
                     color = chipContainerColor,
@@ -187,7 +182,6 @@ fun TaskItem(
             }
         }
 
-        // Action panel — появляется снизу при long press
         AnimatedVisibility(
             visible = actionsVisible,
             enter = expandVertically(

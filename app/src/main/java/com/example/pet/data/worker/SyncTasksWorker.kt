@@ -18,7 +18,6 @@ class SyncTasksWorker(
     override suspend fun doWork(): Result {
         return try {
             Log.i("SyncWorker", "Начало синхронизации")
-            // Проверяем доступность БД — просто делаем запрос
             val unsyncedTasks = taskDao.getUnsyncedTasks()
 
             if (unsyncedTasks.isEmpty()) return Result.success()
@@ -38,7 +37,6 @@ class SyncTasksWorker(
             }
 
         } catch (e: Exception) {
-            // БД недоступна или другая ошибка — повторим позже
             Result.retry()
         }
     }

@@ -41,7 +41,6 @@ fun TaskDetailBottomBar(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             if (isCompleted) {
-                // Задача выполнена — предлагаем вернуть в работу
                 OutlinedButton(
                     onClick = onToggleCompleted,
                     modifier = Modifier.fillMaxWidth(),
@@ -63,7 +62,6 @@ fun TaskDetailBottomBar(
                     )
                 }
             } else {
-                // Задача не выполнена — предлагаем завершить
                 Button(
                     onClick = onToggleCompleted,
                     modifier = Modifier.fillMaxWidth(),

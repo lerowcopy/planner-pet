@@ -3,10 +3,6 @@ package com.example.pet.domain.model
 import com.example.pet.data.local.entity.TaskEntity
 import com.example.pet.data.model.TaskDto
 
-/**
- * Domain модель задачи.
- * Представляет бизнес-логику и не зависит от фреймворков.
- */
 data class Task(
     val id: String,
     val title: String,

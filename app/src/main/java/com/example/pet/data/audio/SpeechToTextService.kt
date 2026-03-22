@@ -26,14 +26,12 @@ class SpeechToTextService @Inject constructor(
     var isModelLoaded = false
         private set
 
-    // --- Загрузка модели ---
     suspend fun loadModel() = withContext(Dispatchers.IO) {
         File(context.filesDir, "model").deleteRecursively()
         LibVosk.setLogLevel(LogLevel.WARNINGS)
 
         val modelPath = copyModelFromAssets()
 
-        // Проверяем что скопировалось
         val modelDir = File(modelPath)
         Log.d("Vosk", "Model path: $modelPath")
         Log.d("Vosk", "Model exists: ${modelDir.exists()}")
@@ -43,7 +41,6 @@ class SpeechToTextService @Inject constructor(
         isModelLoaded = true
     }
 
-    // --- Запуск распознавания с микрофона ---
     fun startListening(
         onPartialResult: (String) -> Unit = {},
         onResult: (String) -> Unit,
@@ -97,13 +94,11 @@ class SpeechToTextService @Inject constructor(
         }
     }
 
-    // --- Остановка ---
     fun stopListening() {
         speechService?.stop()
         speechService = null
     }
 
-    // --- Освобождение ресурсов ---
     fun release() {
         speechService?.shutdown()
         speechService = null
@@ -111,7 +106,6 @@ class SpeechToTextService @Inject constructor(
         model = null
     }
 
-    // --- Копируем модель из assets в filesDir ---
     private fun copyModelFromAssets(): String {
         val modelDir = File(context.filesDir, "model")
         if (modelDir.exists()) return modelDir.absolutePath
@@ -142,7 +136,6 @@ class SpeechToTextService @Inject constructor(
         }
     }
 
-    // --- Парсим JSON: {"text": "купить продукты"} ---
     private fun parseText(hypothesis: String?): String {
         return try {
             JSONObject(hypothesis ?: "").optString("text", "").trim()

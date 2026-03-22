@@ -3,6 +3,7 @@ package com.example.pet.data.remote
 import com.example.pet.BuildConfig
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.Strictness
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,9 +15,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
-/**
- * Модуль для предоставления зависимостей сетевого слоя.
- */
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
@@ -25,7 +23,7 @@ object NetworkModule {
     @Singleton
     fun provideGson(): Gson {
         return GsonBuilder()
-            .setLenient()
+            .setStrictness(Strictness.LENIENT)
             .serializeNulls() // Сериализует null значения
             .create()
     }

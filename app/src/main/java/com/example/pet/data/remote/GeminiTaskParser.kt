@@ -47,7 +47,7 @@ class GeminiTaskParser @Inject constructor(
                 Log.i("ai", e.message.toString())
             }
 
-            Log.i("ai", "Response is null: ${response}")
+            Log.i("ai", "Response is null: $response")
             Log.i("ai", "Response text: ${response?.text}")
             
             val json = response?.text ?: run {

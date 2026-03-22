@@ -7,36 +7,38 @@ import com.example.pet.domain.usecase.DeleteTaskUseCase
 import com.example.pet.domain.usecase.GetTaskByIdUseCase
 import com.example.pet.domain.usecase.UpdateTaskUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/**
- * ViewModel для экрана детальной информации о задаче.
- */
 @HiltViewModel
 class TaskDetailViewModel @Inject constructor(
     private val getTaskByIdUseCase: GetTaskByIdUseCase,
     private val deleteTaskUseCase: DeleteTaskUseCase,
     private val updateTaskUseCase: UpdateTaskUseCase
 ) : ViewModel() {
-    
+
     private val _uiState = MutableStateFlow<TaskDetailUiState>(TaskDetailUiState.Loading)
     val uiState: StateFlow<TaskDetailUiState> = _uiState.asStateFlow()
-    
-    private val _deleteResult = MutableStateFlow<Result<Unit>?>(null)
-    val deleteResult: StateFlow<Result<Unit>?> = _deleteResult.asStateFlow()
-    
-    /**
-     * Загрузить задачу по ID.
-     */
+
+    private val _events = MutableSharedFlow<TaskDetailEvent>(
+        replay = 0,
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+    val events: SharedFlow<TaskDetailEvent> = _events.asSharedFlow()
+
     fun loadTask(taskId: String) {
         viewModelScope.launch {
             _uiState.value = TaskDetailUiState.Loading
-            
+
             getTaskByIdUseCase(taskId)
                 .catch { exception ->
                     _uiState.value = TaskDetailUiState.Error(
@@ -44,32 +46,41 @@ class TaskDetailViewModel @Inject constructor(
                     )
                 }
                 .collect { result ->
-                    result.onSuccess { task ->
-                        _uiState.value = TaskDetailUiState.Success(task)
-                    }.onFailure { exception ->
-                        _uiState.value = TaskDetailUiState.Error(
-                            message = exception.message ?: "Ошибка при загрузке задачи"
-                        )
-                    }
+                    result
+                        .onSuccess { task ->
+                            _uiState.value = TaskDetailUiState.Success(task)
+                        }
+                        .onFailure { exception ->
+                            _uiState.value = TaskDetailUiState.Error(
+                                message = exception.message ?: "Ошибка при загрузке задачи"
+                            )
+                        }
                 }
         }
     }
-    
-    /**
-     * Удалить задачу по ID.
-     */
+
     fun deleteTask(taskId: String) {
         viewModelScope.launch {
-            _deleteResult.value = null
-            
             deleteTaskUseCase(taskId)
                 .catch { exception ->
-                    _deleteResult.value = Result.failure(
-                        Exception(exception.message ?: "Неизвестная ошибка")
+                    _events.emit(
+                        TaskDetailEvent.DeleteError(
+                            message = exception.message ?: "Не удалось удалить задачу"
+                        )
                     )
                 }
                 .collect { result ->
-                    _deleteResult.value = result
+                    result
+                        .onSuccess {
+                            _events.emit(TaskDetailEvent.DeleteSuccess)
+                        }
+                        .onFailure { exception ->
+                            _events.emit(
+                                TaskDetailEvent.DeleteError(
+                                    message = exception.message ?: "Не удалось удалить задачу"
+                                )
+                            )
+                        }
                 }
         }
     }
@@ -78,9 +89,7 @@ class TaskDetailViewModel @Inject constructor(
         viewModelScope.launch {
             val updated = task.copy(isCompleted = !task.isCompleted)
             updateTaskUseCase(updated)
-                .catch { exception ->
-                    // переиспользуем существующий _deleteResult или заводи отдельный _uiEvent
-                }
+                .catch { }
                 .collect { result ->
                     result.onSuccess {
                         _uiState.value = TaskDetailUiState.Success(updated)
@@ -88,12 +97,9 @@ class TaskDetailViewModel @Inject constructor(
                 }
         }
     }
-    
-    /**
-     * Сбросить результат удаления.
-     */
-    fun clearDeleteResult() {
-        _deleteResult.value = null
-    }
 }
 
+sealed interface TaskDetailEvent {
+    data object DeleteSuccess : TaskDetailEvent
+    data class DeleteError(val message: String) : TaskDetailEvent
+}

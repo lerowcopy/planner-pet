@@ -15,16 +15,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.pet.domain.model.Task
 
-/**
- * Dialog для отображения детальной информации о задаче.
- */
+@Deprecated("Уже не используется")
 @Composable
 fun TaskDetailDialog(
     task: Task,
@@ -54,7 +50,6 @@ fun TaskDetailDialog(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Название задачи
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -71,7 +66,6 @@ fun TaskDetailDialog(
                     )
                 }
 
-                // Описание задачи (если есть)
                 if (!task.description.isNullOrBlank()) {
                     Column(
                         modifier = Modifier.fillMaxWidth(),
@@ -90,7 +84,6 @@ fun TaskDetailDialog(
                     }
                 }
 
-                // День выполнения
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -107,7 +100,6 @@ fun TaskDetailDialog(
                     )
                 }
 
-                // Статус выполнения
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -128,7 +120,6 @@ fun TaskDetailDialog(
                     )
                 }
 
-                // ID задачи (для отладки, можно убрать)
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -147,7 +138,6 @@ fun TaskDetailDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Кнопка закрытия
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End

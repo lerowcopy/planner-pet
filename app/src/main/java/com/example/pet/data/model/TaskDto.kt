@@ -3,10 +3,6 @@ package com.example.pet.data.model
 import com.example.pet.data.local.entity.TaskEntity
 import com.example.pet.domain.model.Task
 
-/**
- * Data Transfer Object (DTO) для задачи.
- * Представляет модель данных, приходящую с сервера.
- */
 data class TaskDto(
     val id: String,
     val title: String,
@@ -44,9 +40,6 @@ fun TaskDto.toDomain(): Task {
     )
 }
 
-/**
- * Преобразовать список DTO в список Domain моделей.
- */
 fun List<TaskDto>.toDomain(): List<Task> {
     return map { it.toDomain() }
 }

@@ -6,10 +6,6 @@ import java.io.IOException
 import java.net.SocketTimeoutException
 import javax.inject.Inject
 
-/**
- * Источник данных для получения задач из сети.
- * Обрабатывает сетевые запросы и преобразует ответы.
- */
 class TaskRemoteDataSource @Inject constructor(
     private val apiService: TaskApiService
 ) {
@@ -41,48 +37,12 @@ class TaskRemoteDataSource @Inject constructor(
                     }
                 }
             } catch (e: SocketTimeoutException) {
-                Result.failure(NetworkException.TimeoutError)
+                Result.failure(NetworkException.TimeoutError())
             } catch (e: IOException) {
                 Result.failure(NetworkException.NetworkError(e.message ?: "Connection failed"))
             } catch (e: Exception) {
                 Result.failure(NetworkException.UnknownError(e.message ?: "Unknown error"))
             }
-        }
-    }
-    
-    /**
-     * Получить задачу по ID из сети.
-     * @param taskId ID задачи
-     * @return Результат с DTO задачи
-     */
-    suspend fun getTaskById(taskId: String): Result<TaskDto> {
-        return try {
-            val response = apiService.getTaskById(taskId)
-            val body = response.body()
-            
-            when {
-                response.isSuccessful && body != null -> {
-                    Result.success(body)
-                }
-                response.isSuccessful && body == null -> {
-                    Result.failure(NetworkException.HttpError(
-                        code = response.code(),
-                        errorMessage = "Task not found"
-                    ))
-                }
-                else -> {
-                    Result.failure(NetworkException.HttpError(
-                        code = response.code(),
-                        errorMessage = response.message()
-                    ))
-                }
-            }
-        } catch (e: SocketTimeoutException) {
-            Result.failure(NetworkException.TimeoutError)
-        } catch (e: IOException) {
-            Result.failure(NetworkException.NetworkError(e.message ?: "Connection failed"))
-        } catch (e: Exception) {
-            Result.failure(NetworkException.UnknownError(e.message ?: "Unknown error"))
         }
     }
     
@@ -114,7 +74,7 @@ class TaskRemoteDataSource @Inject constructor(
                 }
             }
         } catch (e: SocketTimeoutException) {
-            Result.failure(NetworkException.TimeoutError)
+            Result.failure(NetworkException.TimeoutError())
         } catch (e: IOException) {
             Result.failure(NetworkException.NetworkError(e.message ?: "Connection failed"))
         } catch (e: Exception) {
@@ -150,7 +110,7 @@ class TaskRemoteDataSource @Inject constructor(
                 }
             }
         } catch (e: SocketTimeoutException) {
-            Result.failure(NetworkException.TimeoutError)
+            Result.failure(NetworkException.TimeoutError())
         } catch (e: IOException) {
             Result.failure(NetworkException.NetworkError(e.message ?: "Connection failed"))
         } catch (e: Exception) {
@@ -175,7 +135,7 @@ class TaskRemoteDataSource @Inject constructor(
                 ))
             }
         } catch (e: SocketTimeoutException) {
-            Result.failure(NetworkException.TimeoutError)
+            Result.failure(NetworkException.TimeoutError())
         } catch (e: IOException) {
             Result.failure(NetworkException.NetworkError(e.message ?: "Connection failed"))
         } catch (e: Exception) {

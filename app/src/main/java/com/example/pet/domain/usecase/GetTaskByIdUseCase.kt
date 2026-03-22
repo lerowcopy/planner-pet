@@ -5,9 +5,6 @@ import com.example.pet.domain.repository.TaskRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-/**
- * Use case для получения задачи по ID.
- */
 class GetTaskByIdUseCase @Inject constructor(
     private val taskRepository: TaskRepository
 ) {
